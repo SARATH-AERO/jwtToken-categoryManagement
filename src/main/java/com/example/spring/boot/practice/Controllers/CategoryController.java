@@ -24,11 +24,11 @@ public class CategoryController {
     }
 
 
-    @GetMapping("/hio/{ji}")
-    public ResponseEntity<String> retun(@PathVariable String ji){
-
-        return new ResponseEntity<>(ji+"   controllers works", HttpStatus.OK);
-    }
+//    @GetMapping("/hio/{ji}")
+//    public ResponseEntity<String>  getCategory(@PathVariable String ji){
+//
+//        return new ResponseEntity<>(ji+"   controllers works", HttpStatus.OK);
+//    }
 
 
 
