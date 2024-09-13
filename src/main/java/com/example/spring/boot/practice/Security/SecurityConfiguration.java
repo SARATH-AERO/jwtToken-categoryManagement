@@ -29,11 +29,18 @@ public class SecurityConfiguration {
                 .requestMatchers("/authenticate").permitAll()
 //  permit all to create jwt token & return
                 .requestMatchers("category/**").hasRole("ADMIN")
+//  When a request is processed, Spring Security uses the Authentication object
+//  in the SecurityContext to enforce access control.
 // permit only has role of ADMIN
                 .anyRequest().authenticated()
                 .and()
 //  adding JWT filter before giving access by checking role
+// The addFilterBefore method allows you to insert your custom filter (jwtFilter in this case)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+// The addFilterBefore method places your custom filter (jwtFilter) before the specified filter in
+// the chain. Here, you are placing jwtFilter before UsernamePasswordAuthenticationFilter.
+//UsernamePasswordAuthenticationFilter is a standard Spring Security filter that handles form-based
+// login and username/password authentication.
                 .build();
     }
 

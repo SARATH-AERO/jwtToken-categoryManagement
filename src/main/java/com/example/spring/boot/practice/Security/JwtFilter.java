@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -45,15 +50,34 @@ public class JwtFilter extends OncePerRequestFilter {
 //isAuthenticated (a boolean flag indicating whether the user is authenticated).
 //If the authentication object is null or not.
         if( username != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+//            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//  jwt principle. not interact with database for token&user&roles validation. so userdetails not fetched.
+//  only used for frequently changing roles.
+
 //after token validation
             if(jwtUtil.validateToken(jwtToken, username)){
+
+                List<String> roles = jwtUtil.extractRolesFromToken(jwtToken);
+                Collection<? extends GrantedAuthority> authorities = roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+//  SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ADMIN");
+                        .collect(Collectors.toList());
+//  Collectors.toList() converts the stream into a List.
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails
+//                        userDetails
+// username fetched from token not database
+                        username
                         ,null
-                        ,userDetails.getAuthorities()
+//                        ,userDetails.getAuthorities()
+//now roles are fetched from token not database
+                        ,authorities
                 );
 // we set above mentioned details of UserDetails with roles.
+//  you extract roles from it and set them in the Authentication object:
+//  When a request is processed, Spring Security uses the Authentication object
+//  in the SecurityContext to enforce access control.
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }

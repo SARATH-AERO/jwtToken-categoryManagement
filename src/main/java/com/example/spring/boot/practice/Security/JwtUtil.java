@@ -6,10 +6,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -24,10 +26,11 @@ public class JwtUtil {
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 
-    public String generateToken(String username){
+    public String generateToken(UserDetails userDetails){
         Map<String, Object> claims = new HashMap<>();
 // map used to pass many information. but here we pass null. we can pass in future.
-        return createToken(claims, username);
+        claims.put("roles", userDetails.getAuthorities());
+        return createToken(claims, userDetails.getUsername());
     }
 
     private String createToken(Map<String, Object> claims, String subject){
@@ -74,5 +77,9 @@ public class JwtUtil {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
     }
 
+    public List<String> extractRolesFromToken(String token){
+        Claims claims = extractAllClaims(token);
+        return (List<String>) claims.get("roles");
+    }
 
 }
